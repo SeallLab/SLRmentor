@@ -1,20 +1,16 @@
-# Use a lightweight Python base image
+# Use a lightweight Python base image (includes PyTorch runtime)
 FROM pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy only dependencies first (better caching)
+# Install dependencies first for caching
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt --verbose
-
-# Copy the entire project into the container
+# Copy app code
 COPY . .
 
-# Expose the port Gunicorn will run on
 EXPOSE 5000
 
-# Run Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# Run Gunicorn with 2 workers + sane timeouts
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--timeout", "120", "--graceful-timeout", "30", "--max-requests", "200", "--max-requests-jitter", "50", "app:app"]

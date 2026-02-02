@@ -165,44 +165,64 @@ You can visit [http://127.0.0.1:5000/](http://127.0.0.1:5000/) to check if the s
 5. Access at: `http://127.0.0.1:5000/`
 
 ---
+## Running backend with docker, and Deployment to dockerhub
+
 
 1️⃣ Build the image from the current directory in the backend
-docker build -t seallabuofc/slrmentor-backend:v2.1 .
+
+`docker build -t seallabuofc/slrmentor-backend:v2.2 .`
 
 Optionally, also tag it as latest:
-docker tag seallabuofc/slrmentor-backend:v2.1 seallabuofc/slrmentor-backend:latest
+
+`docker tag seallabuofc/slrmentor-backend:v2.2 seallabuofc/slrmentor-backend:latest`
 
 
-2️⃣ Run the container with the .env file
-docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:v2.0
+2️⃣ Run the container with the .env file to test if needed
+
+`docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:v2.2`
+
+stop container: `docker stop slrmentor-backend`
 
 3️⃣ Log in to Docker Hub (if not already)
-docker login
+
+`docker login`
 
 4️⃣ Push the new image to Docker Hub
 
 Push the version tag:
 
-docker push seallabuofc/slrmentor-backend:v2.1
+`docker push seallabuofc/slrmentor-backend:v2.2`  
 
-docker push seallabuofc/slrmentor-backend:latest
+`docker push seallabuofc/slrmentor-backend:latest`
 
 
 6️⃣ Pull the updated image on other machines
 
 If you want to run this updated image elsewhere:
 
-docker pull seallabuofc/slrmentor-backend:latest
-docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:lat
+`docker pull seallabuofc/slrmentor-backend:latest`
+
+`docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:latest`
 
 
-## In ec2 instance
+## Run App from Docker hub on other machines from docker hub (includes ec2)
 
-docker stop slrmentor-backend
+Stop any currently running containers:
 
-docker rm slrmentor-backend
+`docker stop slrmentor-backend`
 
-docker pull seallabuofc/slrmentor-backend:latest
+Remove container:
 
-docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:latest
+`docker rm slrmentor-backend`
 
+Pull latest image build:
+
+`docker pull seallabuofc/slrmentor-backend:latest`
+
+run with no memory limit:
+
+`docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env seallabuofc/slrmentor-backend:latest`
+
+with memory limit(1gib example):
+
+`docker run -d --name slrmentor-backend -p 5000:5000 --env-file .env --memory=1g --memory-swap=1g seallabuofc/slrmentor-backend:latest`
