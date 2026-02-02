@@ -1,4 +1,4 @@
-# SEALL App
+# SLRmentor 
 
 The app is a tool designed to assist researchers in initiating their **Systematic Literature Reviews**. The app helps generate search strings for academic databases and define inclusion/exclusion criteria based on user inputted context such as their research topic and research questions. Featuring a ChatGPT-style web interface, the app enables users to interact with an AI using natural language to create and refine search strategies and criteria. Users can continue the conversation to tailor the results to their specific needs. Additionally, the app saves chat histories using a unique generated hash, allowing for easy sharing of conversations without the need for user login—ideal for collaborative use when the app is deployed online.
 

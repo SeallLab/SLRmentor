@@ -1,4 +1,4 @@
-# SEALL App Backend
+# SLRmentor App Backend
 
 This is the backend for the **SEALL** application — a tool for generating and refining academic search strings and inclusion/exclusion criteria using AI (Gemini & GPT), MongoDB, and Flask.
 
