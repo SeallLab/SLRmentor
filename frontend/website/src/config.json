@@ -4,7 +4,7 @@
     "createChat": "/createchat",
     "getChatHistory": "/getchathistory",
     "prompt": "/prompt",
-    "conversion": "/convertsearchstring",
+    "convertSearchString": "/convertsearchstring",
     "conversionFormats": "/conversionformats",
     "getCriteriaChatHistory": "/getcriteriachathistory",
     "criteria": "/criteria",

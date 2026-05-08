@@ -23,8 +23,8 @@ function ChatSearchString({ chatHash }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ hash_plain_text: chatHash }),
         });
-        const data = await response.json();
-        return data;
+
+        return await response.json();
       } catch (err) {
         console.error('Error:', err);
         setError('An error occurred while getting chat.');
@@ -57,15 +57,22 @@ function ChatSearchString({ chatHash }) {
         });
 
         const lastEntry = data.chat_history[data.chat_history.length - 1];
-        if (lastEntry?.search_string) setSearchString(lastEntry.search_string);
-        if (lastEntry?.search_string_format) setSearchStringFormat(lastEntry.search_string_format);
+
+        if (lastEntry?.search_string) {
+          setSearchString(lastEntry.search_string);
+        }
+
+        if (lastEntry?.search_string_format) {
+          setSearchStringFormat(lastEntry.search_string_format);
+        }
       }
 
       if (formattedMessages.length === 0) {
         formattedMessages.push({
           sender: 'ai',
           title: 'SLRmentor',
-          message: 'Hello👋 I am SLRmentor. Give me your study goal and I will help you create your search string!',
+          message:
+            'Hello👋 I am SLRmentor. Give me your study goal and I will help you create your search string!',
           showSources: true,
         });
       }
@@ -73,19 +80,25 @@ function ChatSearchString({ chatHash }) {
       setMessages(formattedMessages);
     };
 
-    if (chatHash) populateChatHistory();
+    if (chatHash) {
+      populateChatHistory();
+    }
   }, [chatHash]);
 
   useEffect(() => {
     const fetchFormats = async () => {
       try {
-        const res = await fetch(`${API_BASE}${ENDPOINTS.conversionFormats}`);
-        const data = await res.json();
-        if (Array.isArray(data.formats)) setAvailableFormats(data.formats);
+        const response = await fetch(`${API_BASE}${ENDPOINTS.conversionFormats}`);
+        const data = await response.json();
+
+        if (Array.isArray(data.formats)) {
+          setAvailableFormats(data.formats);
+        }
       } catch (err) {
         console.error('Error fetching formats:', err);
       }
     };
+
     fetchFormats();
   }, []);
 
@@ -103,15 +116,23 @@ function ChatSearchString({ chatHash }) {
 
     setMessages((prev) => [
       ...prev,
-      { sender: 'user', title: 'You', message: newMessage },
+      {
+        sender: 'user',
+        title: 'You',
+        message: newMessage,
+      },
     ]);
 
     try {
       const response = await fetch(`${API_BASE}${ENDPOINTS.prompt}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hash_plain_text: chatHash, user_message: newMessage }),
+        body: JSON.stringify({
+          hash_plain_text: chatHash,
+          user_message: newMessage,
+        }),
       });
+
       const data = await response.json();
 
       if (data.status === true && data.llm_response?.trim()) {
@@ -124,14 +145,21 @@ function ChatSearchString({ chatHash }) {
             showSources: true,
           },
         ]);
+
         setSearchString(data.updated_search_string || '');
-        setSearchStringFormat(data.search_string_format || '');
+        setSearchStringFormat(data.search_string_format || data.current_format || '');
       }
     } catch (err) {
       console.error(err);
+
       setMessages((prev) => [
         ...prev,
-        { sender: 'ai', title: 'SLRmentor', message: 'Error sending message.', showSources: true },
+        {
+          sender: 'ai',
+          title: 'SLRmentor',
+          message: 'Error sending message.',
+          showSources: true,
+        },
       ]);
     }
 
@@ -145,34 +173,52 @@ function ChatSearchString({ chatHash }) {
     setError(null);
 
     try {
-      // If you have a backend route for conversion, add it to apiConfig as ENDPOINTS.convertSearchString
-      if (ENDPOINTS.convertSearchString) {
-        const response = await fetch(`${API_BASE}${ENDPOINTS.convertSearchString}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            hash_plain_text: chatHash,
-            search_string: searchString,
-            target_format: newFormat,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (data?.status === true) {
-          // Expecting backend to return converted string + format
-          setSearchString(data.converted_search_string || searchString);
-          setSearchStringFormat(data.search_string_format || newFormat);
-        } else {
-          // Fallback: update label only
-          setSearchStringFormat(newFormat);
-        }
-      } else {
-        // No endpoint provided: update label only (UI still matches the guide)
-        setSearchStringFormat(newFormat);
+      if (!ENDPOINTS.convertSearchString) {
+        setError('Format conversion endpoint is not configured.');
+        return;
       }
 
-      setShowFormatsDropdown(false);
+      const response = await fetch(`${API_BASE}${ENDPOINTS.convertSearchString}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hash_plain_text: chatHash,
+          conversion_format: newFormat,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data?.status === true) {
+        if (data.user_message?.trim()) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: 'user',
+              title: 'You',
+              message: data.user_message,
+            },
+          ]);
+        }
+
+        if (data.llm_response?.trim()) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: 'ai',
+              title: 'SLRmentor',
+              message: data.llm_response,
+              showSources: true,
+            },
+          ]);
+        }
+
+        setSearchString(data.updated_search_string || searchString);
+        setSearchStringFormat(data.current_format || newFormat);
+        setShowFormatsDropdown(false);
+      } else {
+        setError('Format conversion was not successful.');
+      }
     } catch (err) {
       console.error(err);
       setError('An error occurred while converting formats.');
@@ -256,6 +302,7 @@ function ChatSearchString({ chatHash }) {
           className="chat-input"
           disabled={loadingConversion}
         />
+
         <button
           id="search-send-button"
           onClick={sendMessage}
