@@ -1,5 +1,5 @@
 {
-  "apiBase": "http://127.0.0.1:5000",
+  "apiBase": "https://api.slrmentor.ca",
   "endpoints": {
     "createChat": "/createchat",
     "getChatHistory": "/getchathistory",
