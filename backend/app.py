@@ -10,6 +10,8 @@ from helpers.llm.promptBuilder import Prompt #for building prompts
 import helpers.llm.llmPromptingUtils as pu #for actually calling the AI API
 from helpers.RAG.RetrieverManager import RetrieverManager
 from helpers.db.mongodbhelpers import MongoHelper
+from helpers.llm.llmReturnFormat import Response
+
 
 # from google.genai.types import HttpOptions
 
@@ -433,7 +435,7 @@ def prompt():
             
 
         updated_search_string = llm_response["updated_search_string"]
-        if not llm_response["has_chaged"]:
+        if not llm_response["has_changed"]:
             updated_search_string = current_search_string
         
         #create new message to store in db
@@ -493,72 +495,143 @@ def get_conversionformats():
     }
     return return_request
 
-@app.route("/convertsearchstring", methods=['POST'])
+
+@app.route("/convertsearchstring", methods=["POST"])
 def convert():
     request_required_fields = ["hash_plain_text", "conversion_format"]
+
     return_request = {
         "status": False,
         "ai_used": "",
         "user_message": "",
         "llm_response": "",
         "updated_search_string": "",
-        "current_format": "" 
+        "current_format": "",
+        "message": "",
     }
-    
-    status_code = 401
-    try:
-        
-        
-        #validate that all required fields are present in request66
-        data = request.json
-        if check_missing_or_blank_fields(data, request_required_fields):
-            raise ValueError("request missing fields")
 
-        #Basic error checking
-        if str(data["conversion_format"]).strip() not in valid_ss_conversions:
-            raise ValueError("conversion search string format not recognized")
-        
-        
-        #retrieving the current format from the DB
-        hash = str(data["hash_plain_text"])
+    try:
+        # -------------------------------------------------
+        # 1. Validate request body
+        # -------------------------------------------------
+        data = request.get_json(silent=True)
+
+        if not data:
+            return_request["message"] = "Request body must be valid JSON"
+            return jsonify(return_request), 400
+
+        if check_missing_or_blank_fields(data, request_required_fields):
+            return_request["message"] = "Request missing required fields"
+            return jsonify(return_request), 400
+
+        hash_plain_text = str(data["hash_plain_text"]).strip()
+        requested_conversion_format = str(data["conversion_format"]).strip()
+
+        if requested_conversion_format not in valid_ss_conversions:
+            return_request["message"] = "Conversion search string format not recognized"
+            return jsonify(return_request), 400
+
+        # -------------------------------------------------
+        # 2. Retrieve existing search string chat from DB
+        # -------------------------------------------------
         chat_doc = mongo.db.search_string_chats.find_one(
-            {"_id": hash},
+            {"_id": hash_plain_text},
             {"chat_history": 0}
         )
-        #validate hash exists
+
         if not chat_doc:
-            raise ValueError("Chat with given hash doesnt exsist")
-        
-        #getting the current latest search string and format
+            return_request["message"] = "Chat with given hash does not exist"
+            return jsonify(return_request), 404
+
         current_search_string = chat_doc.get("current_search_string", "")
-        current_search_string_format = chat_doc["current_search_string_format"]
-        #validating the format exists and is different then the format to be converted to
-        if str(current_search_string_format).strip() not in valid_ss_conversions:
-            raise ValueError("current search string format not recognized")
-        if str(data["conversion_format"]).strip() == current_search_string_format:
-            raise ValueError("Conversion format must be different then current format")
-        
-        #getting prompt files and strs ready
-        with open("helpers/llm/prompts/conversion/1_BasePrompt.txt", "r", encoding="utf-8") as f:
-            base_prompt = f.read()       
-        with open("helpers/llm/prompts/conversion/2_userInputPrompt.txt", "r", encoding="utf-8") as f:
-            user_input_prompt = f.read()
-        search_string = f'User Input: {current_search_string} \n \n'
-        
-        with open("helpers/llm/prompts/conversion/3_formatContext.txt", "r", encoding="utf-8") as f:
-            user_input_context = f.read()
-        with open("helpers/llm/prompts/conversion/" + str(valid_ss_conversions[current_search_string_format]), "r", encoding="utf-8") as f:
-            current_format = f.read()
-            
-        with open("helpers/llm/prompts/conversion/5_conversionContext.txt", "r", encoding="utf-8") as f:
-            convert_to_context = f.read()
-        with open("helpers/llm/prompts/conversion/" + str(valid_ss_conversions[data["conversion_format"]]).strip(), "r", encoding="utf-8") as f:
-            convert_to_format = f.read()
-        
-        
-        with open("helpers/llm/prompts/conversion/specificationFollowup.txt", "r", encoding="utf-8") as f:
-            end_specification = f.read()
-        
+        current_search_string_format = str(
+            chat_doc.get("current_search_string_format", "")
+        ).strip()
+
+        if not current_search_string:
+            return_request["message"] = "Current search string is empty"
+            return jsonify(return_request), 500
+
+        if current_search_string_format not in valid_ss_conversions:
+            return_request["message"] = "Current search string format not recognized"
+            return jsonify(return_request), 500
+
+        if requested_conversion_format == current_search_string_format:
+            return_request["message"] = (
+                "Conversion format must be different than current format"
+            )
+            return jsonify(return_request), 400
+
+        # -------------------------------------------------
+        # 3. Load prompt files
+        # -------------------------------------------------
+        try:
+            with open(
+                "helpers/llm/prompts/conversion/1_BasePrompt.txt",
+                "r",
+                encoding="utf-8"
+            ) as f:
+                base_prompt = f.read()
+
+            with open(
+                "helpers/llm/prompts/conversion/2_userInputPrompt.txt",
+                "r",
+                encoding="utf-8"
+            ) as f:
+                user_input_prompt = f.read()
+
+            with open(
+                "helpers/llm/prompts/conversion/3_formatContext.txt",
+                "r",
+                encoding="utf-8"
+            ) as f:
+                user_input_context = f.read()
+
+            current_format_filename = valid_ss_conversions[current_search_string_format]
+            with open(
+                "helpers/llm/prompts/conversion/" + str(current_format_filename),
+                "r",
+                encoding="utf-8"
+            ) as f:
+                current_format = f.read()
+
+            with open(
+                "helpers/llm/prompts/conversion/5_conversionContext.txt",
+                "r",
+                encoding="utf-8"
+            ) as f:
+                convert_to_context = f.read()
+
+            convert_to_format_filename = valid_ss_conversions[requested_conversion_format]
+            with open(
+                "helpers/llm/prompts/conversion/" + str(convert_to_format_filename).strip(),
+                "r",
+                encoding="utf-8"
+            ) as f:
+                convert_to_format = f.read()
+
+            with open(
+                "helpers/llm/prompts/conversion/specificationFollowup.txt",
+                "r",
+                encoding="utf-8"
+            ) as f:
+                end_specification = f.read()
+
+        except FileNotFoundError as e:
+            print(f"Prompt file missing: {e}")
+            return_request["message"] = f"Prompt file missing: {e}"
+            return jsonify(return_request), 500
+
+        except Exception as e:
+            print(f"Error loading prompt files: {e}")
+            return_request["message"] = f"Error loading prompt files: {e}"
+            return jsonify(return_request), 500
+
+        # -------------------------------------------------
+        # 4. Build full prompt
+        # -------------------------------------------------
+        search_string = f"User Input: {current_search_string}\n\n"
+
         prompt = Prompt()
         prompt.append_item(base_prompt)
         prompt.append_item(user_input_prompt)
@@ -568,66 +641,109 @@ def convert():
         prompt.append_item(convert_to_context)
         prompt.append_item(convert_to_format)
         prompt.append_item(end_specification)
-        
+
         full_prompt = prompt.get_prompt_as_str()
-        
-        #calling LLM
-        llm_response = {}
-        ai_used = ""
+
+        # -------------------------------------------------
+        # 5. Call AI with Gemini -> ChatGPT fallback
+        # -------------------------------------------------
         try:
-            llm_response = pu.call_gemini(gemini_key, full_prompt)
-            ai_used = "Gemini"
+            llm_response, ai_used = pu.call_ai_with_fallback(
+                gemini_key=gemini_key,
+                gpt_key=gpt_key,
+                prompt=full_prompt,
+                schema=Response,
+            )
 
         except Exception as e:
-            print(f"Gemini call failed, falling back to ChatGPT: {e}")
-            llm_response = pu.call_chatgpt(gpt_key, full_prompt)
-            ai_used = "chatGPT"
+            print(f"All AI providers failed in /convertsearchstring: {e}")
+            return_request["message"] = str(e)
+            return jsonify(return_request), 502
 
-        updated_search_string = llm_response["updated_search_string"]
-        
-        #create new message to store in db
-        user_message = f'Convert the current search string to the {data["conversion_format"]} format'
-        new_db_message = {
-            "user_message": user_message,
-            "llm_response": llm_response["text"],
-            "message_dt": datetime.datetime.now(),
-            "message_number": int(chat_doc["message_count"]) + 1,
-            "search_string": updated_search_string,  
-            "search_string_format": data["conversion_format"]
-        }
-        
-        # Update the chat document: push new message, update message count and last use
-        mongo.db.search_string_chats.update_one(
-            {"_id": hash},
-            {
-                "$push": {"chat_history": new_db_message},
-                "$set": {
-                    "chat_last_use": datetime.datetime.now(),
-                    "message_count": int(chat_doc["message_count"]) + 1,
-                    "current_search_string": updated_search_string,
-                    "current_search_string_format": data["conversion_format"]
-                }
+        # -------------------------------------------------
+        # 6. Validate AI response
+        # -------------------------------------------------
+        if not isinstance(llm_response, dict):
+            return_request["message"] = "AI response was not a dictionary"
+            return jsonify(return_request), 502
+
+        llm_text = str(llm_response.get("text", "")).strip()
+        updated_search_string = str(
+            llm_response.get("updated_search_string", "")
+        ).strip()
+
+        if not llm_text:
+            return_request["message"] = "AI response missing text"
+            return jsonify(return_request), 502
+
+        if not updated_search_string:
+            return_request["message"] = "AI response missing updated_search_string"
+            return jsonify(return_request), 502
+
+        has_changed = llm_response.get("has_changed")
+
+        if has_changed is None:
+            return_request["message"] = "AI response missing has_changed"
+            return jsonify(return_request), 502
+
+        # -------------------------------------------------
+        # 7. Store result in DB
+        # -------------------------------------------------
+        try:
+            current_message_count = int(chat_doc.get("message_count", 0))
+            new_message_count = current_message_count + 1
+
+            user_message = (
+                f"Convert the current search string to the "
+                f"{requested_conversion_format} format"
+            )
+
+            new_db_message = {
+                "user_message": user_message,
+                "llm_response": llm_text,
+                "message_dt": datetime.datetime.now(),
+                "message_number": new_message_count,
+                "search_string": updated_search_string,
+                "search_string_format": requested_conversion_format,
             }
-        )
 
+            mongo.db.search_string_chats.update_one(
+                {"_id": hash_plain_text},
+                {
+                    "$push": {
+                        "chat_history": new_db_message
+                    },
+                    "$set": {
+                        "chat_last_use": datetime.datetime.now(),
+                        "message_count": new_message_count,
+                        "current_search_string": updated_search_string,
+                        "current_search_string_format": requested_conversion_format,
+                    },
+                },
+            )
 
+        except Exception as e:
+            print(f"Database update failed in /convertsearchstring: {e}")
+            return_request["message"] = f"Database update failed: {e}"
+            return jsonify(return_request), 500
 
-        #finalize finished return json
-        return_request["llm_response"] = llm_response["text"]
-        return_request["user_message"] = user_message
-        return_request["updated_search_string"] = updated_search_string
-        return_request["current_format"] = data["conversion_format"]
-        return_request["ai_used"] = ai_used
+        # -------------------------------------------------
+        # 8. Return success response
+        # -------------------------------------------------
         return_request["status"] = True
-        status_code = 200
-        #return the llm respnse to the user
+        return_request["ai_used"] = ai_used
+        return_request["user_message"] = user_message
+        return_request["llm_response"] = llm_text
+        return_request["updated_search_string"] = updated_search_string
+        return_request["current_format"] = requested_conversion_format
+        return_request["message"] = "Search string converted successfully"
+
+        return jsonify(return_request), 200
+
     except Exception as e:
-        print(e)
-        status_code = 500
-        return_request["message"] = str(e)
-        
-    finally:
-        return jsonify(return_request), status_code
+        print(f"Unexpected error in /convertsearchstring: {e}")
+        return_request["message"] = f"Unexpected server error: {e}"
+        return jsonify(return_request), 500
 
 
 @app.route("/criteria", methods=['POST'])
@@ -717,7 +833,7 @@ def criteria():
             ai_used = "chatGPT"
 
         updated_inclusion_exclusion_criteria = llm_response["updated_inclusion_exclusion_criteria"]
-        if not llm_response["has_chaged"]:
+        if not llm_response["has_changed"]:
             updated_inclusion_exclusion_criteria = current_criteria
         
         #create new message to store in db
