@@ -69,6 +69,12 @@ Activate the environment:
 conda activate seallapp
 ```
 
+Install heavier packages from `requirements.txt` file:
+
+```bash
+pip install --no-cache-dir -r requirements.txt
+```
+
 ---
 
 # Running MongoDB
