@@ -4,35 +4,30 @@ import styles from "./AboutUs.module.css";
 export default function AboutUs({ onClose }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <button className={styles.closeButton} onClick={onClose}>
-        ✖
-      </button>
-
       <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
         <h2>About Us</h2>
         <div className={styles.section}>
           <img src="/LabLogo.png" alt="SEALL Logo" className={styles.image} />
           <div>
-            <strong>SE-ALL (Software Engineering for All Lab)</strong>
+            <strong>PLURISE</strong>
             <p>
-              The SE-ALL (Software Engineering for All Lab) focuses on the human aspects
-              of software engineering, including development practices, project management,
-              software testing, fairness, and EDI. Understanding behaviors, cognitive skills,
-              teamwork, and diverse user perspectives is vital for creating effective and
-              innovative technology. As society becomes increasingly reliant on software 
-              across work, education, politics, and leisure, and with the rise of AI-powered 
-              systems, ensuring fairness and bias-free solutions in software is essential.
+              The Plural Software Engineering for a Plural Society lab advances a 
+              socio technical understanding of software engineering with emphasis on software processes and teamwork. 
+              The lab conducts empirical studies on how human behavior, organizational context, 
+              and development practices shape software systems, alongside research on software fairness, testing, and AI enabled technologies. 
+              As software increasingly mediates work, education, and everyday life, the lab’s research 
+              contributes evidence and conceptual frameworks that support software systems designed to account for the plurality of society.
             </p>
           </div>
         </div>
         <div className={styles.section}>
           <img src="/rodolfogil.jpeg" alt="Rodolfo Gil Portrait" className={styles.image} />
           <div>
-            <strong>Keeryn Johnson (Undergraduate Research Assistant)</strong>
+            <strong>Rodolfo Gil Pereira (Undergraduate Research Assistant)</strong>
             <p>
-              Keeryn Johnson is currently studying at the University of Calgary for a Software
-              Engineering Degree He has an interest in Robotics
-              and Software Design, and hopes to work in the robotics industry in the future.
+              Rodolfo Gil Pereira is pursuing a degree in Software Engineering at the University of Calgary. 
+              He is particularly interested in backend development 
+              and software design, and he aspires to have a future career in the cloud industry.
             </p>
           </div>
         </div>
@@ -49,6 +44,9 @@ export default function AboutUs({ onClose }) {
             </p>
           </div>
         </div>
+        <button className={styles.closeButtonBottom} onClick={onClose}>
+          Close
+        </button>
       </div>
     </div>
   );
