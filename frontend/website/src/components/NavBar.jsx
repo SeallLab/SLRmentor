@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './NavBar.module.css';
 import PdfPopup from './PdfPopup';
+import AboutUs from './AboutUs';
 
 export default function NavBar({ startTour }) {
   const [showPdfPopup, setShowPdfPopup] = useState(false);
+  const [showAboutUs, setShowAboutUs] = useState(false);
 
   return (
     <>
@@ -39,9 +41,16 @@ export default function NavBar({ startTour }) {
               if (typeof startTour === "function") startTour();
               else console.error("startTour prop is not a function");
             }}
-
           >
             How to Use SLRmentor
+          </button>
+
+          <button
+            id="nav-about-us"
+            className={styles.navButton}
+            onClick={() => setShowAboutUs(prev => !prev)}
+          >
+            About Us
           </button>
         </div>
       </nav>
@@ -50,6 +59,12 @@ export default function NavBar({ startTour }) {
         <PdfPopup
           file="/SEALL- SLRMentor Student Guide.pdf"
           onClose={() => setShowPdfPopup(false)}
+        />
+      )}
+
+      {showAboutUs && (
+        <AboutUs
+          onClose={() => setShowAboutUs(false)}
         />
       )}
     </>
