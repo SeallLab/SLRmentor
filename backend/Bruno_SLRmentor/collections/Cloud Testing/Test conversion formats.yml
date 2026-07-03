@@ -1,0 +1,75 @@
+info:
+  name: Test conversion formats
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: https://api.slrmentor.ca/conversionformats
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: "// Validate that the response code should be 200\r
+
+        test(\"Status code is 200\", function () {\r
+
+        \    expect(res.getStatus()).to.equal(200);\r
+
+        });\r
+
+        \r
+
+        // Validate that the response is json object\r
+
+        test(\"Response is a json object\", function () {\r
+
+        \    expect(res.getBody()).to.be.an('object');\r
+
+        });\r
+
+        \r
+
+        // Validate that the response has an arg object\r
+
+        test(\"Response to have 'arg' object\", function () {\r
+
+        \    expect(res.getBody()).to.have.property('args');\r
+
+        });\r
+
+        \r
+
+        // Validate that the response has headers object\r
+
+        test(\"Response to have 'headers' object\", function () {\r
+
+        \    expect(res.getBody()).to.have.property('headers');\r
+
+        });\r
+
+        \r
+
+        // Validate that the response has url property\r
+
+        test(\"Response to have 'url' property\", function () {\r
+
+        \    expect(res.getBody()).to.have.property('url');\r
+
+        });"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: |-
+  The tests in this request validate that:
+
+  - the response code is 200
+  - the response is a JSON object
+  - the response has an 'arg' object
+  - the response has 'headers' object
+  - the response has a 'URL' property
