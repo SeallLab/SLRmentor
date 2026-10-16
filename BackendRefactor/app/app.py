@@ -4,13 +4,13 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 import os, json, datetime
-import helpers.scholarlyapi as sa #This is for querying and getting paper abstracts
-import helpers.cryptographic_helpers as ch #Generating chat hashes
-from helpers.llm.promptBuilder import Prompt #for building prompts
-import helpers.llm.llmPromptingUtils as pu #for actually calling the AI API
-from helpers.RAG.RetrieverManager import RetrieverManager
-from helpers.db.mongodbhelpers import MongoHelper
-from helpers.llm.llmReturnFormat import Response
+import app.helpers.scholarlyapi as sa #This is for querying and getting paper abstracts
+import app.helpers.cryptographic_helpers as ch #Generating chat hashes
+from app.helpers.llm.promptBuilder import Prompt #for building prompts
+import app.helpers.llm.llmPromptingUtils as pu #for actually calling the AI API
+from app.helpers.RAG.RetrieverManager import RetrieverManager
+from app.helpers.db.mongodbhelpers import MongoHelper
+from app.helpers.llm.llmReturnFormat import Response
 
 
 # from google.genai.types import HttpOptions
@@ -23,17 +23,16 @@ mongo = PyMongo(app)
 mh = MongoHelper(mongo)
 CORS(app)
 
-hash_byte_length = 16
-chat_hash_length = 8
-message_history_limit = 30
-RAG_doc_limit = 30
+hash_byte_length = int(os.getenv("hash_byte_length", 16))
+chat_hash_length = int(os.getenv("chat_hash_length", 8))
+message_history_limit = int(os.getenv("message_history_limit", 30))
 gemini_key = os.getenv('GEMINI_API_KEY')
 gpt_key = os.getenv('GPT_API_KEY')
 rm = RetrieverManager(
     mongo_uri=os.getenv("MONGO_URI"),
-    namespace="SLRMentor.document_rag",
-    index_name="vector_index",
-    top_k=RAG_doc_limit
+    namespace= os.getenv("MONGO_DB_NAME")+ "." + os.getenv("MONGO_DB_RAG_COLLECTION_NAME"),
+    index_name=(os.getenv("VECTOR_SEARCH_INDEX")),
+    top_k=int(os.getenv("RAG_doc_limit"))
 )
 
 
@@ -363,7 +362,7 @@ def prompt():
             raise ValueError("Chat with given hash doesnt exsist")
         sys_context = chat_doc2.get("system_context", "")
         #RAG
-        top_docs = rm.get_relevant_documents_safe(data["user_message"])
+        top_docs = rm.get_relevant_documents(data["user_message"])
         formatted_docs = rm.format_docs(top_docs)
         rag_context_formated_docs = rm.format_docs_prompt(formatted_docs, prescript="Contex", count=1)
         
@@ -371,30 +370,30 @@ def prompt():
         paper_context = ""
         base_prompt = ""
         # Read all prompt components using UTF-8 to prevent decode issues
-        with open("helpers/llm/prompts/searchstrings/identifyingKeyWordsPrompt.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/searchstrings/identifyingKeyWordsPrompt.txt", "r", encoding="utf-8") as f:
             identify_kw_prompt = f.read()
 
-        with open("helpers/llm/prompts/searchstrings/userInputPrompt.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/searchstrings/userInputPrompt.txt", "r", encoding="utf-8") as f:
             user_input_prompt = f.read()
 
-        with open("helpers/llm/prompts/searchstrings/specificationFollowup.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/searchstrings/specificationFollowup.txt", "r", encoding="utf-8") as f:
             end_specification = f.read()
         
 
         user_input = f'User Input: {data["user_message"]} \n \n'
         if current_search_string.strip() == "":
-            with open("helpers/llm/prompts/searchstrings/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/searchstrings/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
                 base_prompt = f.read()
             paper_context = ""
             current_search_string_format = "General"
         else:
-            with open("helpers/llm/prompts/searchstrings/baseFollowupPrompt.txt", "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/searchstrings/baseFollowupPrompt.txt", "r", encoding="utf-8") as f:
                 base_prompt = f.read()
 
             paper_context = f'Current search string: {current_search_string} \n \n'
-            with open("helpers/llm/prompts/conversion/3_formatContext.txt", "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/conversion/3_formatContext.txt", "r", encoding="utf-8") as f:
                 user_input_context = f.read()
-            with open("helpers/llm/prompts/conversion/" + str(valid_ss_conversions.get(current_search_string_format, valid_ss_conversions["General"])), "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/conversion/" + str(valid_ss_conversions.get(current_search_string_format, valid_ss_conversions["General"])), "r", encoding="utf-8") as f:
                 current_format = f.read()
             paper_context = paper_context + user_input_context + current_format
 
@@ -567,21 +566,21 @@ def convert():
         # -------------------------------------------------
         try:
             with open(
-                "helpers/llm/prompts/conversion/1_BasePrompt.txt",
+                "app/helpers/llm/prompts/conversion/1_BasePrompt.txt",
                 "r",
                 encoding="utf-8"
             ) as f:
                 base_prompt = f.read()
 
             with open(
-                "helpers/llm/prompts/conversion/2_userInputPrompt.txt",
+                "app/helpers/llm/prompts/conversion/2_userInputPrompt.txt",
                 "r",
                 encoding="utf-8"
             ) as f:
                 user_input_prompt = f.read()
 
             with open(
-                "helpers/llm/prompts/conversion/3_formatContext.txt",
+                "app/helpers/llm/prompts/conversion/3_formatContext.txt",
                 "r",
                 encoding="utf-8"
             ) as f:
@@ -589,14 +588,14 @@ def convert():
 
             current_format_filename = valid_ss_conversions[current_search_string_format]
             with open(
-                "helpers/llm/prompts/conversion/" + str(current_format_filename),
+                "app/helpers/llm/prompts/conversion/" + str(current_format_filename),
                 "r",
                 encoding="utf-8"
             ) as f:
                 current_format = f.read()
 
             with open(
-                "helpers/llm/prompts/conversion/5_conversionContext.txt",
+                "app/helpers/llm/prompts/conversion/5_conversionContext.txt",
                 "r",
                 encoding="utf-8"
             ) as f:
@@ -604,14 +603,14 @@ def convert():
 
             convert_to_format_filename = valid_ss_conversions[requested_conversion_format]
             with open(
-                "helpers/llm/prompts/conversion/" + str(convert_to_format_filename).strip(),
+                "app/helpers/llm/prompts/conversion/" + str(convert_to_format_filename).strip(),
                 "r",
                 encoding="utf-8"
             ) as f:
                 convert_to_format = f.read()
 
             with open(
-                "helpers/llm/prompts/conversion/specificationFollowup.txt",
+                "app/helpers/llm/prompts/conversion/specificationFollowup.txt",
                 "r",
                 encoding="utf-8"
             ) as f:
@@ -781,7 +780,7 @@ def criteria():
             raise ValueError("Chat with given hash doesnt exsist")
         sys_context = chat_doc2.get("system_context", "")
         #RAG
-        top_docs = rm.get_relevant_documents_safe(data["user_message"])
+        top_docs = rm.get_relevant_documents(data["user_message"])
         formatted_docs = rm.format_docs(top_docs)
         rag_context_formated_docs = rm.format_docs_prompt(formatted_docs, prescript="Contex", count=1)
         
@@ -789,20 +788,20 @@ def criteria():
         paper_context = ""
         base_prompt = ""
         # Read all prompt components using UTF-8 to prevent decode issues
-        with open("helpers/llm/prompts/criteria/userInputPrompt.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/criteria/userInputPrompt.txt", "r", encoding="utf-8") as f:
             user_input_prompt = f.read()
 
-        with open("helpers/llm/prompts/criteria/specificationFollowup.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/criteria/specificationFollowup.txt", "r", encoding="utf-8") as f:
             end_specification = f.read()
         
 
         user_input = f'User Input: {data["user_message"]} \n \n'
         if current_criteria.strip() == "":
-            with open("helpers/llm/prompts/criteria/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/criteria/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
                 base_prompt = f.read()
             paper_context = ""
         else:
-            with open("helpers/llm/prompts/criteria/baseFollowupPrompt.txt", "r", encoding="utf-8") as f:
+            with open("app/helpers/llm/prompts/criteria/baseFollowupPrompt.txt", "r", encoding="utf-8") as f:
                 base_prompt = f.read()
             paper_context = f"Current inclusion/exclusion criteria:\n{current_criteria}\n\n"
 
@@ -878,40 +877,34 @@ def criteria():
     
 @app.route("/ragquery", methods=["POST"])
 def rag_query():
-    request_required_fields = ["user_message"]
-    return_request = {
-        "status": False,
-        "message": "",
-        "user_message": "",
-        "top_documents": []
-    }
-    status_code = 401
     try:
-        data = request.json
-        if check_missing_or_blank_fields(data, request_required_fields):
-            raise ValueError("Request missing required fields")
+        data = request.get_json(silent=True)
 
-        user_message = data["user_message"]
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid JSON body"}), 400
 
-        # Safely retrieve documents
-        top_docs = rm.get_relevant_documents_safe(user_message)
-        formatted_docs_plaintext = rm.format_docs(top_docs)
+        query = data.get("query")
 
-        return_request.update({
-            "status": True,
-            "message": "Successfully retrieved documents",
-            "user_message": user_message,
-            "top_documents": formatted_docs_plaintext
-        })
-        status_code = 200
+        if not isinstance(query, str) or not query.strip():
+            return jsonify({"error": "Query is required"}), 400
 
-    except Exception as e:
-        print(e)
-        return_request["message"] = str(e)
-        status_code = 500
+        query = query.strip()
 
-    finally:
-        return jsonify(return_request), status_code
+        # Native MongoDB retrieval (no LangChain).
+        documents = rm.get_relevant_documents(query)
+
+        return jsonify({
+            "query": query,
+            "total_results": len(documents),
+            "documents": documents
+        }), 200
+
+    except Exception:
+        app.logger.exception("RAG query failed")
+
+        return jsonify({
+            "error": "RAG query failed"
+        }), 500
 
 @app.route("/mentor", methods=["POST"])
 def mentor():
@@ -964,8 +957,8 @@ def mentor():
             raise ValueError("Chat with given hash doesnt exsist")
         sys_context = chat_doc2.get("system_context", "")
         
-        # Safely retrieve documents
-        top_docs = rm.get_relevant_documents_safe(user_message)
+        # Retrieve native dictionaries using MongoDB-hosted embeddings
+        top_docs = rm.get_relevant_documents(user_message)
         formatted_docs = rm.format_docs(top_docs)
         rag_context_formated_docs = rm.format_docs_prompt(formatted_docs, prescript="Contex", count=1)
         
@@ -973,16 +966,16 @@ def mentor():
         paper_context = ""
         base_prompt = ""
         # Read all prompt components using UTF-8 to prevent decode issues
-        with open("helpers/llm/prompts/mentor/userInputPrompt.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/mentor/userInputPrompt.txt", "r", encoding="utf-8") as f:
             user_input_prompt = f.read()
 
-        with open("helpers/llm/prompts/mentor/specificationFollowup.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/mentor/specificationFollowup.txt", "r", encoding="utf-8") as f:
             end_specification = f.read()
         
 
         user_input = f'User Input: {data["user_message"]} \n \n'
         
-        with open("helpers/llm/prompts/mentor/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
+        with open("app/helpers/llm/prompts/mentor/baseQuestionPrompt.txt", "r", encoding="utf-8") as f:
             base_prompt = f.read()
             
         rag_context = "The following is some relevant context and information in no perticular order to help you answer the users question: \n" + "\n".join(rag_context_formated_docs) + "\n\n"

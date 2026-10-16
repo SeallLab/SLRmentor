@@ -2,7 +2,7 @@ from typing import Type
 from pydantic import BaseModel, ValidationError
 from openai import OpenAI
 from google import genai
-from helpers.llm.llmReturnFormat import Response, ResponseCriteria, ResponseMentor
+from app.helpers.llm.llmReturnFormat import Response, ResponseCriteria, ResponseMentor
 import json
 
 

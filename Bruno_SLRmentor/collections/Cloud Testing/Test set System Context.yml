@@ -1,0 +1,77 @@
+info:
+  name: Test set System Context
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: https://api.slrmentor.ca/setsystemcontext
+  body:
+    type: json
+    data: "{\r
+
+      \    \"hash_plain_text\": \"624a1591\",\r
+
+      \    \"system_context\": \"skibi\"\r
+
+      }"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: "// Validate that the response code should be 200\r
+
+        test(\"Response Code should be 200\", function () {\r
+
+        \    expect(res.getStatus()).to.equal(200);\r
+
+        });\r
+
+        \r
+
+        // Run validations on response headers like Content-Type\r
+
+        test(\"Content-Type should be JSON\", function () {\r
+
+        \    expect(res.getHeader('Content-Type')).to.eql('application/json; charset=utf-8');\r
+
+        });\r
+
+        \r
+
+        const json = res.getBody();\r
+
+        \r
+
+        // The response body, including individual attributes can be evaluated for correctness\r
+
+        test(\"`args` should contain the correct query params\", function () {\r
+
+        \    expect(json.args).to.be.an('object');\r
+
+        \    expect(json.args.foo).to.eql('bar');\r
+
+        \    expect(json.args.baz).to.eql('value');\r
+
+        });\r
+
+        \r
+
+        // Non-trivial data types like Dates can also be tested against\r
+
+        test(\"Date in the header should be valid\", function () {\r
+
+        \    const parsedDate = new Date(res.getHeader('Date'));\r
+
+        \    expect(parsedDate).to.be.a('date');\r
+
+        });"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: The tests in the request validate the response code and the data returned in the response is the same as the one being sent.

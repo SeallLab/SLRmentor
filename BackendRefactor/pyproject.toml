@@ -1,5 +1,5 @@
 [project]
-name = "SLRmentor Backend"
+name = "SLRmentor_Backend"
 version = "0.1.0"
 description = "SLRmentor backend is the api server that servers the frontends requests"
 readme = "README.md"
