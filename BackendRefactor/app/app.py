@@ -110,8 +110,7 @@ def create_chat():
         print(e)
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
 
 @app.route("/getsystemcontext", methods=['POST'])
 def get_system_context():
@@ -149,8 +148,7 @@ def get_system_context():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
         
 @app.route("/getchathistory", methods=['POST'])
 def get_chat_history():
@@ -192,8 +190,7 @@ def get_chat_history():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
 
 @app.route("/getcriteriachathistory", methods=['POST'])
 def get_criteria_chat_history():
@@ -235,8 +232,7 @@ def get_criteria_chat_history():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
     
 @app.route("/getmentorchathistory", methods=['POST'])
 def get_mentor_chat_history():
@@ -278,8 +274,7 @@ def get_mentor_chat_history():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
 
 @app.route("/setsystemcontext", methods=['POST'])
 def set_system_context():
@@ -322,8 +317,7 @@ def set_system_context():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
         
 @app.route("/prompt", methods=['POST'])
 def prompt():
@@ -476,8 +470,7 @@ def prompt():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
     
     
 def check_missing_or_blank_fields(data, request_required_fields):
@@ -872,8 +865,7 @@ def criteria():
         status_code = 500
         return_request["message"] = str(e)
         
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
     
 @app.route("/ragquery", methods=["POST"])
 def rag_query():
@@ -1038,5 +1030,4 @@ def mentor():
         return_request["message"] = str(e)
         status_code = 500
 
-    finally:
-        return jsonify(return_request), status_code
+    return jsonify(return_request), status_code
