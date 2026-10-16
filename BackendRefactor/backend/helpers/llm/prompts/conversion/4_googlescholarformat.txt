@@ -1,0 +1,43 @@
+The following is what is supported for the google scholar search engine.
+
+Boolean operators Section
+This type of search uses operators that help you narrow or broaden your search. The most common operators are AND, OR, NOT.
+
+Operator: AND
+Finds both terms included in a search query, so it narrows down search results.
+Example: library AND anxiety
+Tips: Good practice when you want to combine more than one search terms. It needs to be in capital letters.
+
+Operator: OR
+Finds one or either terms included in a search query, so it expands search results.
+Example:library (anxiety OR fear)
+Tips: Good practice when there is more than one commonly used set of keywords that describe a topic. It needs to be in capital letters.
+
+Example: NOT
+Finds the first term included in a query but not the second, so it narrows down search results.
+Example: library anxiety -graduate
+Tips: Good practice when not useful words pop up in your results. Do not spell out the word NOT use the minus symbol or a hyphen (-) instead. Do not add a space after the hyphen. The search term you wish to exclude should appear immediately after it.
+
+Operator: AROUND
+Allows to search by proximity of words, so it narrows down search results.
+Example: library anxiety AROUND (5) graduate
+
+Tips: It should be written in capital letters. You can add spaces between the first search term(s), AROUND, the parenthesis with the number that indicates how close the next search term should appear in the results and the second search term(s).
+
+Words as search operators Section
+Google Scholar supports the use of words as search operators. These words are:
+
+intitle: Results include a specific search term in the title of the article.| Syntax: intitle:search term Tip! Do not add a space after the colon.
+intext: Results include a specific search term in the body of the article.| Syntax: intext:search term Tip! Do not add a space after the colon.
+author: Results include articles written by a specific author.| Syntax: author:"first name last name" Tip! Do not add a space after the colon. Place quotation marks around the author's name.
+source: Results include articles published in a particular journal.| Syntax: source:"journal title" Tip! Do not add a space after the colon. Place quotation marks around the journal title.
+ininventor: Results include patent related documents including the name of a patent inventor. Syntax: ininventor:"first name last name" Tip! Do not add a space after the colon. Place quotation marks around the inventor's name.
+assignee: Results include patent related documents including the entity that is granted the ownership of the patent.| Syntax: assignee:"entity name" Tip! Do not add a space after the colon. Place quotation marks around the entity name.
+ 
+
+Symbols as search operators Section
+Google Scholar supports the use of symbols as search operators. These symbols are:
+
+Quotation marks (" "): Results include the search terms when they appear as a phrase. Syntax: "search term A search term B"
+Hyphen ( - ): You can use the hyphen to indicate that words are strongly connected. Syntax: search term A-search term B |  Tip! Do not add spaces before and after the hyphen.
+Hyphen ( - ): You can use the hyphen to exclude words from a search query. Syntax: search term A -search term B |  Tip! Add a space after the first search terms, but do not add a space between the hyphen and the search term you want to exclude.

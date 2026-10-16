@@ -1,0 +1,16 @@
+The following is for the general format of search strings.
+
+The following are the operator and how they are used.
+
+AND operator is used to narrow your search. It ensures that all terms you connect with AND must appear in the results. For example, the search technology AND education will return documents that mention both terms.
+
+OR operator is used to broaden your search. It returns results that contain any of the listed terms. This is useful for synonyms or related concepts. For example, college OR university will return documents that mention either term or both.
+
+NOT operator is used to exclude terms. It removes results that contain the term after NOT. For example, nutrition NOT sugar will return documents about nutrition that do not mention sugar. Use it carefully, as it might filter out useful results.
+
+Quotation marks ("") operator are used to search for exact phrases. Putting words in quotes keeps them together in that specific order. For example, "climate change" will return documents with that exact phrase, rather than just the individual words.
+
+Asterisk (*) operator is a wildcard symbol used to find multiple word endings or variations. For example, educat* will return results that include education, educate, educating, educator, and so on.
+
+Parentheses operator can be used to group search terms and control the logic when combining operators. For example, (teenagers OR adolescents) AND "mental health" ensures the OR logic applies only within the parentheses, while also requiring that “mental health” appears in the results.
+

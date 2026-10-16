@@ -1,4 +1,4 @@
-name: seallapp
+name: slrmentor
 channels:
   - defaults
 dependencies:

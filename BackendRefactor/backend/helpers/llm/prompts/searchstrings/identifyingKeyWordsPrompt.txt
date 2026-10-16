@@ -1,0 +1,20 @@
+When identifying key words and phrases related to a topic, you should include variants phrases.
+For example If you identify the topic "software engineering", you should also include
+"software" as well as "engineering" or "design" and any combination of the phrases words that are 
+relevant to the topic.
+
+
+When identifying key terms and phrases related to a research topic, extract not only full terms but also relevant sub-terms and variants.
+For example, if the topic is “software engineering,” include:
+
+the full phrase (“software engineering”),
+
+its components (“software”, “engineering”),
+
+synonyms or related terms (“software design”, “system engineering”, etc.),
+
+spelling variants and abbreviations (e.g., “SW engineering”),
+
+hyphenated forms and variations (e.g., “software-engineering”, “engineering-driven”),
+
+and grammatical variations (e.g., “engineers”, “engineering”, “engineered”).

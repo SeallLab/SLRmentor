@@ -1,0 +1,2 @@
+Your task is to take a given academic database search string with a given format, and convert it to another given equivalent format.
+You are to maintain the underlying logic of the search string. you will be provided with context on how the original is built and the the format of the target format.

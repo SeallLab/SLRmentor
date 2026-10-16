@@ -1,0 +1,92 @@
+The following is what is supported for the IEEE Xplore search engine.
+
+Search Operators Section:
+By default, multiple search terms are searched together with an implicit "AND" operator. For instance, a search for phone haptics will return both phone AND haptics. To search for content containing phone OR haptics, use the "OR" operator. Search operators (AND, OR, NOT, NEAR, and ONEAR) can be used in the global search and search within boxes.
+
+Note:
+Operators must be in ALL CAPS.
+Boolean operators can be combined with proximity searches, for example:
+(A OR B) NEAR/5 (C OR D)
+or
+(Java OR XML) NEAR/3 (Code OR UI)
+Search operators are considered in an order of precedence: ONEAR/NEAR, NOT, AND, OR.
+Operators are not yet supported in Advanced Search fields, but can be included between each field with the drop-down menus. Operators are fully supported in all other search tools, including Basic Search, Command Search, and Search Within Results.
+
+
+Field Searching Section:
+You can now search data fields in the global search bar. The syntax is as follows:
+
+"Field name":keyword/number
+
+Below are 26 field search examples:
+"Document Title":computing
+"Authors":B. Smith
+"Publication Title":data mining
+"Abstract":LTE
+"Index Terms":resistor AND capacitor
+"Accession Number":16585141
+"Article Number":8263303
+"Article Page Number":1102305
+"Author Affiliations":IBM
+"Author Keywords":java
+"Author ORCID":0000-0001-6017-975X
+"DOI":10.1109/TPDS.2017.2754366
+"Funding Agency":Smithsonian
+"IEEE Terms":lasers
+"ISBN":9780262347051
+"ISSN":2169-3536
+"Issue":10
+"Mesh_Terms":biomedical
+"Publication Number":5
+"Standards Dictionary Terms":wireless
+"Standards ICS Terms":35.240.80
+"Standard Number":802.11
+"Start Page":1
+"End Page":1
+Note: The AND operator is not implicit with data field searching. Be sure to use search operators when searching data fields.
+
+Relevance Ranking Section
+In addition to advanced term / keyword matching, the IEEE Xplore search engine uses four additional weights to influence search results, including phrase boosting, term weighting, distance weight, and field boosting:
+
+Phrase Boosting:
+Number of terms matched within a phrase will rank higher.
+Term Weighting
+Considers the date content is inserted and the type of indexed content. This causes paid research content to appear above ephemera content such as front and back matter.
+Distance Weight
+Considers proximity of the terms to each other. If one document has an instance of "cloud" very near "computing", and another document has the same number of "cloud" and "computing" terms, but they are not very near, then the one with the "cloud" near "computing" will have a higher score.
+Field Boosting
+Results are ranked based on which field the match is found in. For example, a match on document title would be ranked higher than a match on index term or abstract text.
+
+Stemming Section:
+IEEE Xplore supports stem variations with some exceptions. Entering British or American spellings will search for both variations. Use wildcards for greater precision.
+
+Wildcards Section:
+Wildcards can be used to make your search results more accurate. Wildcards are used in search queries to represent one or more other characters. The following is describes how wildcards can be used in IEEE Xplore:
+
+Asterisk wildcard (*) can be used:
+for a single character or multiple characters.
+for zero or more characters.
+at the end of a word.
+at the beginning of the word (left truncation).
+in the middle of a word.
+Maximum wildcards per search: 10
+Minimum characters required: 3
+Exception: Author Facet (2)
+Supported with proximity operators.
+Supported for full-text searches.
+Supported with phrased searching.
+Supports a question mark (?) for single character wildcard.
+
+Phrased Searching Section:
+Phrased searching allows for more precise search results. Here are guidelines for using phrased searching:
+
+Use quotes (" ") to search for a specific phrase.
+When searching for phrases, stemming will be disabled. For example: "system on chip" will not return 'systems on chip' and "color image" will not return 'colour image'.
+You can use a wildcard to search for stem variations in a phrased search. For example: "comput* program".
+Stop words can be searched against if included in a phrase ("Designing the Digital" will account for the stop word "the").
+Punctuation is treated as a space. For instance, a search for "data-center" will return "data center", but will not return "datacenter".
+
+Additional Search Tips Section:
+Ensure that searches for strings containing an ampersand are enclosed in quotes. For example: "AT&T".
+A maximum of 25 terms are allowed within each clause. A clause is any search criteria included between the Boolean operators AND, OR, NOT.
+
