@@ -1,16 +1,20 @@
-# Use a lightweight Python base image (includes PyTorch runtime)
-FROM pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime
+FROM python:3.14.5-slim
 
-WORKDIR /app
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Install dependencies first for caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /backend
 
-# Copy app code
-COPY . .
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked --no-install-project --no-dev
+
+COPY app ./app
+
+ENV PATH="/backend/.venv/bin:$PATH"
 
 EXPOSE 5000
 
-# Run Gunicorn with 2 workers + sane timeouts
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--timeout", "120", "--graceful-timeout", "30", "--max-requests", "200", "--max-requests-jitter", "50", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --timeout 120 app.app:app"]
