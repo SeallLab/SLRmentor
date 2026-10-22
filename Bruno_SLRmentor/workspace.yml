@@ -1,0 +1,14 @@
+opencollection: 1.0.0
+info:
+  name: "SLRmentor"
+  type: workspace
+
+collections:
+  - name: "Cloud Testing"
+    path: "collections/Cloud Testing"
+  - name: "Route Testing"
+    path: "collections/Route Testing"
+
+specs:
+
+docs: ''
