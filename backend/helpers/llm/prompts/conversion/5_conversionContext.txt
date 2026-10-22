@@ -1,2 +1,0 @@
-You are to convert the given search string into this new provided format:
-

@@ -1,3 +1,0 @@
-The following is the message history and the users current input. This can be their research topic, 
-inclusion and exclusion creteria, their search string, or a question.
-You are to answer relevent questions that the user asks based on the provided context.

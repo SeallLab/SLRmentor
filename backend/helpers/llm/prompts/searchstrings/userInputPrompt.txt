@@ -1,2 +1,0 @@
-The following is the message history and the users current input. This should be either their research topic, 
-research questions, or a generic question.

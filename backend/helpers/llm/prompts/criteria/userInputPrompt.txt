@@ -1,3 +1,0 @@
-The following is the message history and the users current input. This can be their research topic, 
-inclusion and exclusion creteria, their search string, or a question. You are to answer relevent questions that the user asks or changes to their current inclusion and 
-exclusion criteria. If they are asking to change only one thing in the criteria. You will edit that one aspect and keep the restunless they specify to remove it from the list.

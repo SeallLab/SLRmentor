@@ -1,2 +1,0 @@
-The following is the context reguarding how the above search string is built. Current format:
-
